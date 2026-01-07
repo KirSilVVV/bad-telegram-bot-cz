@@ -390,9 +390,29 @@ bot.on('document', async (ctx) => {
 
 /* -------------------- start -------------------- */
 
-bot.launch();
-console.log('🤖 Bot is running (PDF text + PDF OCR + OCR images + logging + DEBUG)...');
+const PORT = process.env.PORT || 3000;
 
-process.once('SIGINT', () => bot.stop('SIGINT'));
-process.once('SIGTERM', () => bot.stop('SIGTERM'));
+// Use webhook mode for production (Render)
+if (process.env.NODE_ENV === 'production') {
+    console.log(`🤖 Bot is running in WEBHOOK mode on port ${PORT}...`);
+    console.log('📊 PDF text + PDF OCR + OCR images + logging');
+
+    // Use Telegram webhook
+    bot.telegram.setWebhook(`${process.env.RENDER_EXTERNAL_URL || 'https://bad-telegram-bot-cz.onrender.com'}`);
+
+    // Create HTTP server for webhook
+    bot.startWebhook('/bot', null, PORT);
+
+    // Graceful shutdown
+    process.once('SIGINT', () => bot.stop('SIGINT'));
+    process.once('SIGTERM', () => bot.stop('SIGTERM'));
+} else {
+    // Development: polling mode
+    console.log('🤖 Bot is running in POLLING mode (PDF text + PDF OCR + OCR images + logging + DEBUG)...');
+
+    bot.launch();
+
+    process.once('SIGINT', () => bot.stop('SIGINT'));
+    process.once('SIGTERM', () => bot.stop('SIGTERM'));
+}
 
