@@ -399,16 +399,55 @@ if (process.env.NODE_ENV === 'production') {
     console.log(`📊 Webhook URL: ${WEBHOOK_URL}`);
     console.log('📊 PDF text + PDF OCR + OCR images + logging');
 
-    // Start webhook server
-    bot.startWebhook('/', null, PORT);
+    // Use http module for explicit webhook handling
+    import('http').then(({ createServer }) => {
+        const server = createServer(async (req, res) => {
+            // Only handle POST requests
+            if (req.method === 'POST') {
+                let body = '';
+                req.on('data', chunk => body += chunk);
+                req.on('end', async () => {
+                    try {
+                        const update = JSON.parse(body);
+                        await bot.handleUpdate(update);
+                        res.writeHead(200, { 'Content-Type': 'application/json' });
+                        res.end(JSON.stringify({ ok: true }));
+                    } catch (err) {
+                        console.error('Webhook error:', err.message);
+                        res.writeHead(500, { 'Content-Type': 'application/json' });
+                        res.end(JSON.stringify({ ok: false, error: err.message }));
+                    }
+                });
+            } else {
+                // Return 403 for non-POST (expected behavior)
+                res.writeHead(403, { 'Content-Type': 'text/plain' });
+                res.end('Forbidden');
+            }
+        });
 
-    // Set webhook with Telegram
-    bot.telegram.setWebhook(`${WEBHOOK_URL}`);
-    console.log(`✅ Webhook set to: ${WEBHOOK_URL}`);
+        server.listen(PORT, '0.0.0.0', () => {
+            console.log(`✅ HTTP webhook server listening on port ${PORT}`);
+            
+            // Set webhook with Telegram
+            bot.telegram.setWebhook(`${WEBHOOK_URL}`).then(() => {
+                console.log(`✅ Telegram webhook set to: ${WEBHOOK_URL}`);
+            }).catch(err => {
+                console.error('❌ Failed to set webhook:', err.message);
+            });
+        });
 
-    // Graceful shutdown
-    process.once('SIGINT', () => bot.stop('SIGINT'));
-    process.once('SIGTERM', () => bot.stop('SIGTERM'));
+        // Graceful shutdown
+        process.once('SIGINT', () => {
+            console.log('Shutting down...');
+            bot.stop('SIGINT');
+            server.close();
+        });
+        process.once('SIGTERM', () => {
+            console.log('Shutting down...');
+            bot.stop('SIGTERM');
+            server.close();
+        });
+    });
 } else {
     // Development: polling mode
     console.log('🤖 Bot is running in POLLING mode (PDF text + PDF OCR + OCR images + logging + DEBUG)...');
