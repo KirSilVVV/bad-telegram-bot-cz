@@ -391,17 +391,20 @@ bot.on('document', async (ctx) => {
 /* -------------------- start -------------------- */
 
 const PORT = process.env.PORT || 3000;
+const WEBHOOK_URL = process.env.RENDER_EXTERNAL_URL || 'https://bad-telegram-bot-cz.onrender.com';
 
 // Use webhook mode for production (Render)
 if (process.env.NODE_ENV === 'production') {
     console.log(`🤖 Bot is running in WEBHOOK mode on port ${PORT}...`);
+    console.log(`📊 Webhook URL: ${WEBHOOK_URL}`);
     console.log('📊 PDF text + PDF OCR + OCR images + logging');
 
-    // Use Telegram webhook
-    bot.telegram.setWebhook(`${process.env.RENDER_EXTERNAL_URL || 'https://bad-telegram-bot-cz.onrender.com'}`);
+    // Start webhook server
+    bot.startWebhook('/', null, PORT);
 
-    // Create HTTP server for webhook
-    bot.startWebhook('/bot', null, PORT);
+    // Set webhook with Telegram
+    bot.telegram.setWebhook(`${WEBHOOK_URL}`);
+    console.log(`✅ Webhook set to: ${WEBHOOK_URL}`);
 
     // Graceful shutdown
     process.once('SIGINT', () => bot.stop('SIGINT'));
