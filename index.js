@@ -271,7 +271,7 @@ async function voiceflowInteract(userId, text) {
 
     return messages.length
         ? messages.join('\n')
-        : 'Obdržel jsem data, ale AI nevrátila textovou odpověď. Zkontrolujte, zda jsou ve scénáři textové odpovědi.';
+        : 'Я получил данные, но ИИ не вернул текстовый ответ. Проверьте, есть ли в сценарии текстовые ответы.';
 }
 
 async function sendToVoiceflowAsUserTurn(userId, extractedText) {
@@ -282,7 +282,7 @@ async function sendToVoiceflowAsUserTurn(userId, extractedText) {
 
 bot.start(async (ctx) => {
     await ctx.reply(
-        'Jsem automatický asistent. Můžete odpovídat textem nebo poslat PDF/DOCX či snímek obrazovky.'
+        'Я автоматический помощник. Вы можете ответить текстом или отправить PDF/DOCX либо скриншот.'
     );
 });
 
@@ -308,10 +308,10 @@ bot.on('photo', async (ctx) => {
     const best = photos[photos.length - 1];
 
     if (best.file_size && best.file_size > MAX_IMG_MB * 1024 * 1024) {
-        return ctx.reply(`Soubor je příliš velký. Pošlete prosím obrázek do ${MAX_IMG_MB} MB.`);
+        return ctx.reply(`Файл слишком большой. Пожалуйста, отправьте изображение в ${MAX_IMG_MB} MB.`);
     }
 
-    await ctx.reply('Obrázek byl přijat. Získávám text…');
+    await ctx.reply('Изображение получено. Извлекаю текст…');
 
     try {
         const link = await ctx.telegram.getFileLink(best.file_id);
@@ -326,8 +326,8 @@ bot.on('photo', async (ctx) => {
 
         if (!extracted || !extracted.trim()) {
             return ctx.reply(
-                'Nepodařilo se mi získat text z obrázku 😕\n' +
-                'Zkuste prosím ostřejší snímek obrazovky nebo pošlete PDF/DOCX, případně odpovězte textem.'
+                'Не удалось извлечь текст из изображения 😕\n' +
+                'Пожалуйста, попробуйте отправить более чёткий скриншот или пришлите PDF/DOCX, либо ответьте текстом'
             );
         }
 
@@ -336,7 +336,7 @@ bot.on('photo', async (ctx) => {
     } catch (err) {
         console.error(err?.response?.data || err.message);
         await ctx.reply(
-            'Nepodařilo se zpracovat obrázek. Zkuste prosím ostřejší snímek obrazovky nebo pošlete PDF/DOCX.'
+            'Не удалось обработать изображение. Пожалуйста, отправьте более чёткий скриншот или пришлите PDF/DOCX.'
         );
     }
 });
@@ -354,10 +354,10 @@ bot.on('document', async (ctx) => {
     });
 
     if (doc.file_size && doc.file_size > MAX_DOC_MB * 1024 * 1024) {
-        return ctx.reply(`Soubor je příliš velký. Pošlete prosím dokument do ${MAX_DOC_MB} MB.`);
+        return ctx.reply(`Файл слишком большой. Пожалуйста, отправьте документ в ${MAX_DOC_MB} MB.`);
     }
 
-    await ctx.reply('Soubor byl přijat. Získávám text…');
+    await ctx.reply('Файл был принят. Получаю текст…');
 
     try {
         const link = await ctx.telegram.getFileLink(doc.file_id);
@@ -373,8 +373,8 @@ bot.on('document', async (ctx) => {
 
         if (!extracted || !extracted.trim()) {
             return ctx.reply(
-                'Nepodařilo se mi získat text ze souboru 😕\n' +
-                'Nejlépe fungují PDF (textové) nebo DOCX. Pokud se jedná o sken, pošlete prosím fotografii nebo snímky obrazovky stránek.'
+                'Не удалось получить текст из файла 😕\n' +
+                'Лучше всего работают PDF (текстовые) или DOCX. Если это скан, отправьте фото или снимки экрана страниц.'
             );
         }
 
@@ -383,7 +383,7 @@ bot.on('document', async (ctx) => {
     } catch (err) {
         console.error(err?.response?.data || err.message);
         await ctx.reply(
-            'Soubor se nepodařilo zpracovat. Nejlépe fungují PDF (textové) nebo DOCX. Pro skeny použijte fotografie nebo snímky obrazovky.'
+            'Файл не удалось обработать. Лучше всего работают PDF (текстовые) или DOCX. Для сканов используйте фотографии или снимки экрана.'
         );
     }
 });
@@ -427,7 +427,7 @@ if (process.env.NODE_ENV === 'production') {
 
         server.listen(PORT, '0.0.0.0', () => {
             console.log(`✅ HTTP webhook server listening on port ${PORT}`);
-            
+
             // Set webhook with Telegram
             bot.telegram.setWebhook(`${WEBHOOK_URL}`).then(() => {
                 console.log(`✅ Telegram webhook set to: ${WEBHOOK_URL}`);
