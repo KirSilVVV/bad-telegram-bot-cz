@@ -46,7 +46,14 @@ const DEBUG = true;
 const dbg = (...args) => DEBUG && console.log('[DEBUG]', ...args);
 
 if (!TELEGRAM_BOT_TOKEN || !VF_API_KEY || !VF_VERSION_ID) {
-    console.error('❌ Missing .env vars: TELEGRAM_BOT_TOKEN, VOICEFLOW_API_KEY, VOICEFLOW_VERSION_ID');
+    const missing = [];
+    if (!TELEGRAM_BOT_TOKEN) missing.push('TELEGRAM_BOT_TOKEN');
+    if (!VF_API_KEY) missing.push('VOICEFLOW_API_KEY');
+    if (!VF_VERSION_ID) missing.push('VOICEFLOW_VERSION_ID');
+    
+    console.error('❌ Missing required environment variables:');
+    missing.forEach(v => console.error(`   - ${v}`));
+    console.error('\n📝 Please set these variables in your .env file or Render dashboard');
     process.exit(1);
 }
 
