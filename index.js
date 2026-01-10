@@ -282,7 +282,7 @@ async function sendToVoiceflowAsUserTurn(userId, extractedText) {
 
 bot.start(async (ctx) => {
     await ctx.reply(
-        'Я автоматический помощник. Вы можете ответить текстом или отправить PDF/DOCX либо скриншот.'
+        'Я автоматический помощник, анализирующий ваше состояние здоровья. Вы можете ответить текстом или отправить PDF/DOCX либо скриншот.'
     );
 });
 
@@ -293,6 +293,7 @@ bot.on('text', async (ctx) => {
 
     try {
         await logExtracted({ userId, kind: 'text', fileName: '-', extracted: text });
+        await ctx.sendChatAction('typing');
         const reply = await voiceflowInteract(userId, text);
         await ctx.reply(reply);
     } catch (err) {
@@ -331,6 +332,7 @@ bot.on('photo', async (ctx) => {
             );
         }
 
+        await ctx.sendChatAction('typing');
         const reply = await sendToVoiceflowAsUserTurn(userId, truncate(extracted));
         await ctx.reply(reply);
     } catch (err) {
@@ -378,6 +380,7 @@ bot.on('document', async (ctx) => {
             );
         }
 
+        await ctx.sendChatAction('typing');
         const reply = await sendToVoiceflowAsUserTurn(userId, truncate(extracted));
         await ctx.reply(reply);
     } catch (err) {
